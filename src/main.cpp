@@ -309,6 +309,9 @@ void singleClick()
 {
   Serial.println("singleClick() detected.");
 
+  readDataku();
+  URL = hostIPAddress + "/call?id=" + roomID + "&status=1";
+  Serial.println(URL);
   http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
   int httpCode = http.GET();
 
@@ -325,6 +328,34 @@ void singleClick()
 
   http.end();
 } // singleClick
+
+// this function will be called when the button was pressed 2 times in a short timeframe.
+void doubleClick()
+{
+  Serial.println("doubleClick() detected.");
+
+  // ledState = !ledState; // reverse the LED
+  // digitalWrite(PIN_LED, ledState);
+
+  readDataku();
+  URL = hostIPAddress + "/call?id=" + roomID + "&status=0";
+  Serial.println(URL);
+  http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
+  int httpCode = http.GET();
+
+  if (httpCode > 0)
+  {
+    String payload = http.getString();
+    Serial.println(payload);
+    Serial.println(httpCode);
+  }
+  else
+  {
+    Serial.println("Error on HTTP request : " + httpCode);
+  }
+
+  http.end();
+} // doubleClick
 
 void setup()
 {
@@ -353,7 +384,7 @@ void setup()
   // button.attachLongPressStop(pressStop);
 
   // set led pin as output
-  pinMode(LED_BUILTIN, OUTPUT);
+  // pinMode(LED_BUILTIN, OUTPUT);
   // start ticker with 0.5 because we start in AP mode and try to connect
   ticker.attach(0.6, tick);
 
@@ -382,7 +413,7 @@ void setup()
   Serial.println("connected...yeey :)");
   ticker.detach();
   // keep LED on
-  digitalWrite(LED_BUILTIN, LOW);
+  // digitalWrite(LED_BUILTIN, LOW);
 
   // login into WiFi
   // WiFi.mode(WIFI_STA);

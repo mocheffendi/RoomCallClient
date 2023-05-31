@@ -1,4 +1,4 @@
-int blue = 2;
+int blue = 5;
 unsigned long intervalBlue = 1000; // how long to delay in millis
 unsigned long previousBlue = 0;
 int blueState = LOW;
