@@ -2,6 +2,7 @@
 
 WebSocketsServer webSocket = WebSocketsServer(81);
 WebSocketsServer webSocket2 = WebSocketsServer(82);
+WebSocketsServer webSocket3 = WebSocketsServer(83);
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 {

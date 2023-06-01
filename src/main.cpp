@@ -33,6 +33,11 @@ String hostIPAddress, roomID, URL;
 WiFiClient client;
 HTTPClient http;
 
+String inputString = "";        // a string to hold incoming data
+boolean stringComplete = false; // whether the string is complete
+
+String serialString = "test \n";
+
 void handleRoot()
 {
   File file = LittleFS.open("/dashboard.html", "r");
@@ -339,15 +344,25 @@ void doubleClick()
 
   readDataku();
   URL = hostIPAddress + "/call?id=" + roomID + "&status=0";
-  Serial.println(URL);
+
+  serialString = URL + "\n";
+  // webSocket3.broadcastTXT(serialString);
+  Serial.print(serialString);
   http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
   int httpCode = http.GET();
 
   if (httpCode > 0)
   {
     String payload = http.getString();
-    Serial.println(payload);
-    Serial.println(httpCode);
+    // Serial.println(payload);
+    // Serial.println(httpCode);
+
+    serialString = payload + "\n";
+    // webSocket3.broadcastTXT(serialString);
+    Serial.print(serialString);
+    serialString = httpCode + "\n";
+    // webSocket3.broadcastTXT(serialString);
+    Serial.print(serialString);
   }
   else
   {
@@ -355,7 +370,25 @@ void doubleClick()
   }
 
   http.end();
+
 } // doubleClick
+
+void serialEvent()
+{
+  while (Serial.available())
+  {
+    char inChar = (char)Serial.read();
+    if (inChar == '\n')
+    {
+      stringComplete = true;
+      return;
+    }
+    else
+    {
+      inputString += inChar;
+    }
+  }
+}
 
 void setup()
 {
@@ -526,6 +559,11 @@ void setup()
 
   webSocket2.begin();
   webSocket2.onEvent(webSocketEvent);
+
+  webSocket3.begin();
+  webSocket3.onEvent(webSocketEvent);
+  inputString.reserve(256);
+
   // LittleFS.format();
 
   timeClient.begin();
@@ -549,6 +587,23 @@ void loop()
 
   webSocket.loop();
   webSocket2.loop();
+  webSocket3.loop();
+
+  serialEvent();
+  if (stringComplete)
+  {
+    Serial.println("stringComplete");
+
+    String line = inputString;
+    // clear the string:
+    inputString = "";
+    stringComplete = false;
+
+    // line += '\n';
+    webSocket3.broadcastTXT(line);
+    Serial.println(line);
+  }
+
   led_indicator();
   webSocket.broadcastTXT(UPTimes);
 
@@ -556,5 +611,10 @@ void loop()
   // Serial.println(timeClient.getFormattedTime());
   String NTPTime = timeClient.getFormattedTime();
 
+  serialString = timeClient.getFormattedTime();
+
+  serialString = serialString + "\n";
   webSocket2.broadcastTXT(NTPTime);
+  webSocket3.broadcastTXT(serialString);
+  // serialString = "test2 \n";
 }
