@@ -206,6 +206,7 @@ let createTasks = async () => {
                   <span class="fw-bold">${x.roomname}</span>
                   <span class="small text-secondary">${x.bedname}</span>
                   <p>${x.status}</p>
+                  <span class="small text-secondary">RoomID : ${y}</span>
         
                   <span class="options">
                     <i onClick="editTask(this)" data-bs-toggle="modal" data-bs-target="#form" class="fas fa-edit"></i>

@@ -166,6 +166,7 @@ void readDataku()
   String output;
   serializeJsonPretty(data, output);
 
+  bot.sendMessage(hostIPAddress + " " + roomID);
   // server.send(200, "application/json", output);
 }
 
@@ -507,7 +508,7 @@ void setup()
   URL = hostIPAddress + "/call?id=" + roomID + "&status=1";
 
   Serial.println(URL);
-
+  server.on("/", HTTP_GET, handleRedirect);
   server.on("/create", HTTP_POST, handleBuatData);
   server.on("/add", handleTambah);
   server.on("/get", handleDapat);
@@ -542,6 +543,7 @@ void setup()
   server.serveStatic("/dashboard.html", LittleFS, "/dashboard.html");
   // server.serveStatic("/dashboard.css", LittleFS, "/dashboard.css");
   server.serveStatic("/dashboard.js", LittleFS, "/dashboard.js");
+  server.serveStatic("/roomsetting.html", LittleFS, "/roomsetting.html");
 
   // handle cases when file is not found
   // server.onNotFound([](){
