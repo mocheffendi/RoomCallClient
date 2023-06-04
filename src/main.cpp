@@ -1,3 +1,7 @@
+
+#include <Arduino.h>
+ADC_MODE(ADC_VCC);
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "filemanager.h"
@@ -110,7 +114,8 @@ void handleTambah()
 
   outFile.close();
 
-  server.send(200, "text/plain", "Record added successfully");
+  server.sendHeader("Location", String("/"), true);
+  server.send(302);
 }
 
 void handleBuatData()
@@ -186,21 +191,28 @@ void hwInit()
   String VendorID = String(ESP.getFlashChipVendorId());
   String FlashChipID = String(ESP.getFlashChipId());
   String CPUFreqMhz = String(ESP.getCpuFreqMHz());
+  String CoreVersion = String(ESP.getCoreVersion());
+  String SDKVersion = String(ESP.getSdkVersion());
+  String CycleCount = String(ESP.getCycleCount());
+  String FreeSketchSpace = String(ESP.getFreeSketchSpace());
+
   uint16_t v = ESP.getVcc();
-  // float vcc = ((float)v / 1024.0f);
+  float vcc = ((float)v / 1024.0f);
   // char v_str[10];
   // dtostrf(vcc, 5, 3, v_str);
   // sprintf(v_str, "%s V", v_str);
   // Serial.println(v_str);
 
-  String VCC = String(v);
+  String VCC = String(vcc);
 
   String WiFiSSID = String(WiFi.SSID());
   String LocalIP = WiFi.localIP().toString();
   String SubnetMask = WiFi.subnetMask().toString();
   String GateWay = WiFi.gatewayIP().toString();
   String DNSIP = WiFi.dnsIP().toString();
+  // String DNSIP2 = WiFi.dnsIP2().toString();
   String MACAddressHW = WiFi.macAddress();
+  String WiFiRSSI = String(WiFi.RSSI());
 
   LittleFS.info(fs_info);
   String TotalSize = String(fs_info.totalBytes);
@@ -238,6 +250,10 @@ void hwInit()
   obj["SketchSize"] = SketchSize;
   obj["FlashChipID"] = FlashChipID;
   obj["ChipRealSize"] = ChipRealSize;
+  obj["CoreVersion"] = CoreVersion;
+  obj["SDKVersion"] = SDKVersion;
+  obj["CycleCount"] = CycleCount;
+  obj["FreeSketchSpace"] = FreeSketchSpace;
   obj["FreeSpace"] = FreeSpace;
   obj["TotalSize"] = TotalSize;
   obj["TotalSizeKB"] = String(TotalSizeKB);
@@ -254,6 +270,7 @@ void hwInit()
   obj["GateWay"] = GateWay;
   obj["DNSIP"] = DNSIP;
   obj["MACAddressHW"] = MACAddressHW;
+  obj["WiFiRSSI"] = WiFiRSSI;
   obj["TotalSize"] = TotalSize;
   obj["UsedSize"] = UsedSize;
   obj["WiFiStrength"] = WiFiStrength;
@@ -317,7 +334,7 @@ void singleClick()
   Serial.println("singleClick() detected.");
 
   readDataku();
-  URL = hostIPAddress + "/call?id=" + roomID + "&status=1";
+  URL = "http://" + hostIPAddress + "/call?id=" + roomID + "&status=1";
   Serial.println(URL);
   http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
   int httpCode = http.GET();
@@ -345,7 +362,7 @@ void doubleClick()
   // digitalWrite(PIN_LED, ledState);
 
   readDataku();
-  URL = hostIPAddress + "/call?id=" + roomID + "&status=0";
+  URL = "http://" + hostIPAddress + "/call?id=" + roomID + "&status=0";
 
   serialString = URL + "\n";
   // webSocket3.broadcastTXT(serialString);
@@ -505,7 +522,7 @@ void setup()
 
   readDataku();
 
-  URL = hostIPAddress + "/call?id=" + roomID + "&status=1";
+  URL = "http://" + hostIPAddress + "/call?id=" + roomID + "&status=1";
 
   Serial.println(URL);
   server.on("/", HTTP_GET, handleRedirect);
@@ -541,9 +558,9 @@ void setup()
   server.serveStatic("/system.css", LittleFS, "/system.css");
   server.serveStatic("/system.js", LittleFS, "/system.js");
   server.serveStatic("/dashboard.html", LittleFS, "/dashboard.html");
-  // server.serveStatic("/dashboard.css", LittleFS, "/dashboard.css");
+  server.serveStatic("/dashboard.css", LittleFS, "/dashboard.css");
   server.serveStatic("/dashboard.js", LittleFS, "/dashboard.js");
-  server.serveStatic("/roomsetting.html", LittleFS, "/roomsetting.html");
+  // server.serveStatic("/roomsetting.html", LittleFS, "/roomsetting.html");
 
   // handle cases when file is not found
   // server.onNotFound([](){
@@ -617,7 +634,9 @@ void loop()
     Serial.println(line);
   }
 
-  led_indicator();
+  // unsigned long currentMillis = millis();
+  // doTheFade(currentMillis);
+
   webSocket.broadcastTXT(UPTimes);
 
   timeClient.update();

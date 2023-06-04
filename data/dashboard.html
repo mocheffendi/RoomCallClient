@@ -16,7 +16,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Room Call App</title>
-    <link rel="stylesheet" href="bed.css" />
+    <link rel="stylesheet" href="dashboard.css" />
     <!-- <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -124,86 +124,38 @@
             </div> -->
           </div>
         </div>
-        <!-- <section id="dashboard"> -->
         <div class="col-sm p-3 min-vh-100">
-          <!-- content -->
-          <!-- <h2>A glorious Bootstrap 5 icon sidebar menu!</h2>
-          <hr /> -->
-          <div class="app">
-            <!-- <h4 class="mb-3">Room Call App</h4>
-            <div id="addNew" data-bs-toggle="modal" data-bs-target="#form">
-              <span>Add New Bed</span>
-              <i class="fas fa-plus"></i>
-            </div> -->
-            <h5 class="text-center my-3">Bed</h5>
-            <!-- Button trigger modal -->
-
-            <!-- Modal -->
-            <!-- <form
-              class="modal fade"
-              id="form"
-              tabindex="-1"
-              aria-labelledby="exampleModalLabel"
-              aria-hidden="true"
-            >
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-4" id="exampleModalLabel">
-                      Add New Bed
-                    </h1>
-                    <button
-                      type="button"
-                      class="btn-close"
-                      data-bs-dismiss="modal"
-                      aria-label="Close"
-                    ></button>
-                  </div>
-                  <div class="modal-body">
-                    <p>Room Name</p>
-
-                    <input
-                      class="form-control"
-                      type="text"
-                      name=""
-                      id="roomnameInput"
-                    />
-                    <div id="msg"></div>
-                    <br />
-                    <p>Bed Name</p>
-                    <input
-                      class="form-control"
-                      type="text"
-                      name=""
-                      id="bednameInput"
-                    />
-                    <br />
-
-                    <label for="statusInput">Status</label>
-                    <select class="form-control" id="statusInput">
-                      <option>true</option>
-                      <option>false</option>
-                    </select>
-                  </div>
-                  <div class="modal-footer">
-                    <button
-                      type="button"
-                      class="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <button type="submit" id="add" class="btn btn-primary">
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </form> -->
-            <div id="tasks"></div>
-          </div>
+          <h2>Room Setting</h2>
+          <form action="/add" method="post">
+            <div class="form-group w-25">
+              <label for="hostIPAddress">IP Address Master Room Call:</label>
+              <input
+                type="text"
+                class="form-control"
+                value=""
+                maxlength="50"
+                name="hostIPAddress"
+                id="hostIPAddress"
+                placeholder="hostIPAddress"
+                size="50"
+              />
+            </div>
+            <div class="form-group w-25">
+              <label for="roomID">Room ID :</label>
+              <input
+                type="text"
+                class="form-control"
+                value=""
+                maxlength="50"
+                name="roomID"
+                id="roomID"
+                placeholder="roomID"
+              />
+            </div>
+            <br />
+            <button type="submit" class="btn btn-success">Simpan</button>
+          </form>
         </div>
-        <!-- </section> -->
       </div>
     </div>
   </body>

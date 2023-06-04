@@ -1,4 +1,5 @@
 #include <WebSocketsServer.h>
+#include <Hash.h>
 
 WebSocketsServer webSocket = WebSocketsServer(81);
 WebSocketsServer webSocket2 = WebSocketsServer(82);
