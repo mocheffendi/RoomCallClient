@@ -26,6 +26,7 @@ ADC_MODE(ADC_VCC);
 #include "wm.h"
 #include "onebtn.h"
 #include "telegram.h"
+#include "dec.h"
 
 ESP8266WebServer server(80);
 
@@ -175,11 +176,6 @@ void readDataku()
   // server.send(200, "application/json", output);
 }
 
-int bytestoKB(int bkb)
-{
-  return bkb = bkb / 1024;
-}
-
 void hwInit()
 {
   Serial.println("hwInit");
@@ -188,21 +184,19 @@ void hwInit()
   String SketchSize = String(ESP.getSketchSize());
 
   String ChipRealSize = String(ESP.getFlashChipRealSize());
+  String ChipRealSizeDec = decimal(ChipRealSize);
   String VendorID = String(ESP.getFlashChipVendorId());
   String FlashChipID = String(ESP.getFlashChipId());
   String CPUFreqMhz = String(ESP.getCpuFreqMHz());
   String CoreVersion = String(ESP.getCoreVersion());
   String SDKVersion = String(ESP.getSdkVersion());
   String CycleCount = String(ESP.getCycleCount());
+  String CycleCountDec = decimal(CycleCount);
   String FreeSketchSpace = String(ESP.getFreeSketchSpace());
+  String FreeSketchSpaceDec = decimal(FreeSketchSpace);
 
   uint16_t v = ESP.getVcc();
   float vcc = ((float)v / 1024.0f);
-  // char v_str[10];
-  // dtostrf(vcc, 5, 3, v_str);
-  // sprintf(v_str, "%s V", v_str);
-  // Serial.println(v_str);
-
   String VCC = String(vcc);
 
   String WiFiSSID = String(WiFi.SSID());
@@ -216,12 +210,13 @@ void hwInit()
 
   LittleFS.info(fs_info);
   String TotalSize = String(fs_info.totalBytes);
+  String TotalSizeDec = decimal(TotalSize);
   String UsedSize = String(fs_info.usedBytes);
-
+  String UsedSizeDec = decimal(UsedSize);
   int TotalSizeKB = bytestoKB(TotalSize.toInt());
 
   int FreeSpaces = ChipRealSize.toInt() - TotalSize.toInt() - SketchSize.toInt();
-  float FreeSpacesPercent = FreeSpaces / ChipRealSize.toFloat();
+  float FreeSpacesPercent = FreeSketchSpace.toFloat() / ChipRealSize.toFloat();
   float TotalSizePercent = TotalSize.toFloat() / ChipRealSize.toFloat();
   float SketchSizePercent = SketchSize.toFloat() / ChipRealSize.toFloat();
 
@@ -250,14 +245,19 @@ void hwInit()
   obj["SketchSize"] = SketchSize;
   obj["FlashChipID"] = FlashChipID;
   obj["ChipRealSize"] = ChipRealSize;
+  obj["ChipRealSizeDec"] = ChipRealSizeDec;
   obj["CoreVersion"] = CoreVersion;
   obj["SDKVersion"] = SDKVersion;
   obj["CycleCount"] = CycleCount;
+  obj["CycleCountDec"] = CycleCountDec;
   obj["FreeSketchSpace"] = FreeSketchSpace;
+  obj["FreeSketchSpaceDec"] = FreeSketchSpaceDec;
   obj["FreeSpace"] = FreeSpace;
   obj["TotalSize"] = TotalSize;
+  obj["TotalSizeDec"] = TotalSizeDec;
   obj["TotalSizeKB"] = String(TotalSizeKB);
   obj["UsedSize"] = UsedSize;
+  obj["UsedSizeDec"] = UsedSizeDec;
   obj["FreeSpacesPercent"] = String(FreeSpacesPercentInt);
   obj["TotalSizePercent"] = String(TotalSizePercentInt);
   obj["SketchSizePercent"] = String(SketchSizePercentInt);
@@ -290,6 +290,7 @@ void hwInit()
 
   serializeJson(data, outFile);
   serializeJsonPretty(data, Serial);
+
   outFile.close();
   fancyled();
 }
