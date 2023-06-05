@@ -48,6 +48,14 @@ let createSystem = async () => {
               <td>${system.CPUFreqMhz} Mhz</td>
             </tr>
             <tr>
+              <td><b>Core Version</b></td>
+              <td>${system.CoreVersion}</td>
+            </tr>
+            <tr>
+              <td><b>SDK Version</b></td>
+              <td>${system.SDKVersion}</td>
+            </tr>
+            <tr>
               <td><b>CHIP VCC</b></td>
               <td>${system.VCC} Volt</td>
             </tr>
@@ -55,7 +63,7 @@ let createSystem = async () => {
               <td><b>Chip Real Size</b></td>
               <td>
                 <div class="progress">
-                  <div class="progress-bar bg-success" role="progressbar" style="width: ${system.ChipRealSize}%;" aria-valuenow="${system.ChipRealSize}" aria-valuemin="0" aria-valuemax="${system.ChipRealSize}">${system.ChipRealSize} Bytes</div>
+                  <div class="progress-bar bg-success" role="progressbar" style="width: ${system.ChipRealSize}%;" aria-valuenow="${system.ChipRealSize}" aria-valuemin="0" aria-valuemax="${system.ChipRealSize}">${system.ChipRealSizeDec} Bytes</div>
                 </div>
               </td>
             </tr>
@@ -136,6 +144,10 @@ let createSystem = async () => {
             <tr>
               <td><b>MAC Address</b></td>
               <td>${system.MACAddressHW}</td>
+            </tr>
+            <tr>
+              <td><b>WiFi RSSI</b></td>
+              <td>${system.WiFiRSSI}</td>
             </tr>
             <tr>
               <td><b>WiFi Strength</b></td>

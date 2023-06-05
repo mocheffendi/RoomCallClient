@@ -185,6 +185,7 @@ void hwInit()
 
   String ChipRealSize = String(ESP.getFlashChipRealSize());
   String ChipRealSizeDec = decimal(ChipRealSize);
+  String ChipRealSizeFormatBytes = formatBytes(ChipRealSize);
   String VendorID = String(ESP.getFlashChipVendorId());
   String FlashChipID = String(ESP.getFlashChipId());
   String CPUFreqMhz = String(ESP.getCpuFreqMHz());
@@ -246,6 +247,7 @@ void hwInit()
   obj["FlashChipID"] = FlashChipID;
   obj["ChipRealSize"] = ChipRealSize;
   obj["ChipRealSizeDec"] = ChipRealSizeDec;
+  obj["ChipRealSizeFormatBytes"] = ChipRealSizeFormatBytes;
   obj["CoreVersion"] = CoreVersion;
   obj["SDKVersion"] = SDKVersion;
   obj["CycleCount"] = CycleCount;
