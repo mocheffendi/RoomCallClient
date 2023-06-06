@@ -195,6 +195,7 @@ void hwInit()
   String CycleCountDec = decimal(CycleCount);
   String FreeSketchSpace = String(ESP.getFreeSketchSpace());
   String FreeSketchSpaceDec = decimal(FreeSketchSpace);
+  String FreeSketchSpaceFormatBytes = formatBytes(FreeSketchSpace);
 
   uint16_t v = ESP.getVcc();
   float vcc = ((float)v / 1024.0f);
@@ -212,9 +213,10 @@ void hwInit()
   LittleFS.info(fs_info);
   String TotalSize = String(fs_info.totalBytes);
   String TotalSizeDec = decimal(TotalSize);
+  String TotalSizeFormatBytes = formatBytes(TotalSize);
   String UsedSize = String(fs_info.usedBytes);
   String UsedSizeDec = decimal(UsedSize);
-  int TotalSizeKB = bytestoKB(TotalSize.toInt());
+  String UsedSizeFormatBytes = formatBytes(UsedSize);
 
   int FreeSpaces = ChipRealSize.toInt() - TotalSize.toInt() - SketchSize.toInt();
   float FreeSpacesPercent = FreeSketchSpace.toFloat() / ChipRealSize.toFloat();
@@ -254,12 +256,14 @@ void hwInit()
   obj["CycleCountDec"] = CycleCountDec;
   obj["FreeSketchSpace"] = FreeSketchSpace;
   obj["FreeSketchSpaceDec"] = FreeSketchSpaceDec;
+  obj["FreeSketchSpaceFormatBytes"] = FreeSketchSpaceFormatBytes;
   obj["FreeSpace"] = FreeSpace;
   obj["TotalSize"] = TotalSize;
   obj["TotalSizeDec"] = TotalSizeDec;
-  obj["TotalSizeKB"] = String(TotalSizeKB);
+  obj["TotalSizeFormatBytes"] = TotalSizeFormatBytes;
   obj["UsedSize"] = UsedSize;
   obj["UsedSizeDec"] = UsedSizeDec;
+  obj["UsedSizeFormatBytes"] = UsedSizeFormatBytes;
   obj["FreeSpacesPercent"] = String(FreeSpacesPercentInt);
   obj["TotalSizePercent"] = String(TotalSizePercentInt);
   obj["SketchSizePercent"] = String(SketchSizePercentInt);
@@ -312,6 +316,7 @@ void handleSystem()
 
   String output;
   serializeJsonPretty(data, output);
+  bot.sendMessage(output);
 
   server.send(200, "application/json", output);
 }

@@ -50,18 +50,20 @@ String formatBytes(String s)
     long gigaBytes = marker * marker * marker;          // One GB is 1024 MB
     long teraBytes = marker * marker * marker * marker; // One TB is 1024 GB
 
-    long bytes = s.toInt();
+    float bytes = s.toFloat();
 
     // return bytes if less than a KB
     if (bytes < kiloBytes)
-        return String(bytes);
+        return String(bytes) + " Bytes";
     // return KB if less than a MB
     else if (bytes < megaBytes)
-        return String(bytes / kiloBytes);
+        return String(bytes / kiloBytes) + " KB";
     // return MB if less than a GB
     else if (bytes < gigaBytes)
-        return String(bytes / megaBytes);
+        return String(bytes / megaBytes) + " MB";
     // return GB if less than a TB
+    else if (bytes < teraBytes)
+        return String(bytes / gigaBytes) + " GB";
     else
-        return String(bytes / gigaBytes);
+        return String(bytes / teraBytes) + " TB";
 }
