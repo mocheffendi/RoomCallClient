@@ -336,6 +336,29 @@ void handleFormat()
   server.send(200, "text/plain", "LittleFS Formated");
 }
 
+void checkStatusLED()
+{
+  readDataku();
+  URL = "http://" + hostIPAddress + "/getid?id=" + roomID;
+  Serial.println(URL);
+  http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
+  int httpCode = http.GET();
+
+  if (httpCode > 0)
+  {
+    String payload = http.getString();
+    Serial.println(payload);
+    Serial.println(httpCode);
+    bot.sendMessage("Payload : " + payload);
+  }
+  else
+  {
+    Serial.println("Error on HTTP request : " + httpCode);
+  }
+
+  http.end();
+}
+
 // this function will be called when the button was pressed 1 time only.
 void singleClick()
 {
@@ -359,6 +382,7 @@ void singleClick()
   }
 
   http.end();
+  checkStatusLED();
 } // singleClick
 
 // this function will be called when the button was pressed 2 times in a short timeframe.
