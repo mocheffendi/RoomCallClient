@@ -27,8 +27,18 @@ ADC_MODE(ADC_VCC);
 #include "onebtn.h"
 #include "telegram.h"
 #include "dec.h"
+#include "telnet.h"
 
 ESP8266WebServer server(80);
+
+// WiFiManager
+// Local intialization. Once its business is done, there is no need to keep it around
+WiFiManager wifiManager;
+// reset settings - for testing
+// wifiManager.resetSettings();
+
+// WiFiEventHandler wifiConnectHandler;
+// WiFiEventHandler wifiDisconnectHandler;
 
 auto timer = timer_create_default();
 
@@ -172,7 +182,7 @@ void readDataku()
   String output;
   serializeJsonPretty(data, output);
 
-  bot.sendMessage(hostIPAddress + " " + roomID);
+  // bot.sendMessage(hostIPAddress + " " + roomID);
   // server.send(200, "application/json", output);
 }
 
@@ -209,6 +219,7 @@ void hwInit()
   // String DNSIP2 = WiFi.dnsIP2().toString();
   String MACAddressHW = WiFi.macAddress();
   String WiFiRSSI = String(WiFi.RSSI());
+  String WiFiPass = WiFi.psk();
 
   LittleFS.info(fs_info);
   String TotalSize = String(fs_info.totalBytes);
@@ -271,6 +282,7 @@ void hwInit()
   obj["CPUFreqMhz"] = CPUFreqMhz;
   obj["VCC"] = VCC;
   obj["WiFiSSID"] = WiFiSSID;
+  obj["WiFiPass"] = WiFiPass;
   obj["LocalIP"] = LocalIP;
   obj["SubnetMask"] = SubnetMask;
   obj["GateWay"] = GateWay;
@@ -317,6 +329,7 @@ void handleSystem()
   String output;
   serializeJsonPretty(data, output);
   bot.sendMessage(output);
+  TelnetLog(output);
 
   server.send(200, "application/json", output);
 }
@@ -341,6 +354,7 @@ void checkStatusLED()
   readDataku();
   URL = "http://" + hostIPAddress + "/getid?id=" + roomID;
   Serial.println(URL);
+  TelnetLog("URL Check Status : " + URL);
   http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
   int httpCode = http.GET();
 
@@ -349,7 +363,24 @@ void checkStatusLED()
     String payload = http.getString();
     Serial.println(payload);
     Serial.println(httpCode);
-    bot.sendMessage("Payload : " + payload);
+
+    TelnetLog("Payload check Status : " + payload);
+
+    // bot.sendMessage("Payload : " + payload);
+
+    DynamicJsonDocument data(1024);
+    deserializeJson(data, payload);
+    bool status = data["status"];
+    // if (status)
+    // {
+    //   digitalWrite(LEDPin, LOW);
+    // }
+    // else
+    // {
+    //   digitalWrite(LEDPin, HIGH);
+    // }
+    Serial.println(status);
+    // bot.sendMessage("Status : " + String(status));
   }
   else
   {
@@ -359,14 +390,22 @@ void checkStatusLED()
   http.end();
 }
 
+bool checkStatusLEDtimer(void *)
+{
+  checkStatusLED();
+  return true;
+}
+
 // this function will be called when the button was pressed 1 time only.
 void singleClick()
 {
   Serial.println("singleClick() detected.");
+  TelnetLog("singleClick() detected.");
 
   readDataku();
   URL = "http://" + hostIPAddress + "/call?id=" + roomID + "&status=1";
   Serial.println(URL);
+  TelnetLog(URL);
   http.begin(client, URL); // "http://192.168.0.18/call?id=1&status=1"
   int httpCode = http.GET();
 
@@ -375,6 +414,7 @@ void singleClick()
     String payload = http.getString();
     Serial.println(payload);
     Serial.println(httpCode);
+    TelnetLog("Payload: " + payload);
   }
   else
   {
@@ -424,31 +464,29 @@ void doubleClick()
 
 } // doubleClick
 
-void serialEvent()
-{
-  while (Serial.available())
-  {
-    char inChar = (char)Serial.read();
-    if (inChar == '\n')
-    {
-      stringComplete = true;
-      return;
-    }
-    else
-    {
-      inputString += inChar;
-    }
-  }
-}
+// void onWifiConnect(const WiFiEventStationModeGotIP &event)
+// {
+//   Serial.println("Connected to Wi-Fi sucessfully.");
+//   Serial.print("IP address: ");
+//   Serial.println(WiFi.localIP());
+// }
+
+// void onWifiDisconnect(const WiFiEventStationModeDisconnected &event)
+// {
+//   Serial.println("Disconnected from Wi-Fi, trying to connect...");
+//   WiFi.disconnect();
+//   WiFi.begin(WiFi.SSID(), WiFi.psk());
+// }
 
 void setup()
 {
   Serial.begin(115200);
   // put your setup code here, to run once:
   // login into WiFi
-  Serial.println("\n\nESP8266WebFlMgr Demo basic");
 
-  ESPxWebFlMgr_FileSystem.begin();
+  // Register event handlers
+  // wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
+  // wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
 
   // enable the led output.
   pinMode(PIN_LED, OUTPUT); // sets the digital pin as output
@@ -472,12 +510,6 @@ void setup()
   // start ticker with 0.5 because we start in AP mode and try to connect
   ticker.attach(0.6, tick);
 
-  // WiFiManager
-  // Local intialization. Once its business is done, there is no need to keep it around
-  WiFiManager wifiManager;
-  // reset settings - for testing
-  // wifiManager.resetSettings();
-
   // set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
 
@@ -496,6 +528,13 @@ void setup()
   // if you get here you have connected to the WiFi
   Serial.println("connected...yeey :)");
   ticker.detach();
+
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
+
+  Serial.println("\n\nESP8266WebFlMgr Demo basic");
+  ESPxWebFlMgr_FileSystem.begin();
+
   // keep LED on
   // digitalWrite(LED_BUILTIN, LOW);
 
@@ -510,6 +549,7 @@ void setup()
   {
     Serial.print("Open Filemanager with http://");
     Serial.print(WiFi.localIP());
+    TelnetLog("IP Address : " + WiFi.localIP().toString());
     Serial.print(":");
     Serial.print(filemanagerport);
     Serial.print("/");
@@ -517,19 +557,24 @@ void setup()
   }
 
   pinMode(blue, OUTPUT);
+  pinMode(LEDPin, OUTPUT);
 
   ArduinoOTA.onStart([]()
                      {
     analogWrite(blue, 0);
     String type;
-    if (ArduinoOTA.getCommand() == U_FLASH) {
+    if (ArduinoOTA.getCommand() == U_FLASH)
+    {
       type = "sketch";
-    } else {  // U_FS
+    }
+    else
+    { // U_FS
       type = "filesystem";
     }
 
     // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type); });
+    Serial.println("Start updating " + type); 
+    TelnetLog("Start updating " + type); });
   ArduinoOTA.onEnd([]()
                    { 
                     fancyled();
@@ -627,6 +672,18 @@ void setup()
 
   // bot.sendMessage("Hello, World!");
   bot.sendMessage("RoomCallClient IP Address : " + WiFi.localIP().toString());
+  timer.every(5000, checkStatusLEDtimer);
+
+  // blinker.attach(5, ); // Use attach_ms if you need time in
+  configTime(TIME_ZONE, "pool.ntp.org");
+  time_t now = time(nullptr);
+  while (now < SECS_YR_2000)
+  {
+    delay(100);
+    now = time(nullptr);
+  }
+  setTime(now);
+  TelnetStream.begin();
 }
 
 void loop()
@@ -651,23 +708,8 @@ void loop()
   webSocket2.loop();
   webSocket3.loop();
 
-  serialEvent();
-  if (stringComplete)
-  {
-    Serial.println("stringComplete");
-
-    String line = inputString;
-    // clear the string:
-    inputString = "";
-    stringComplete = false;
-
-    // line += '\n';
-    webSocket3.broadcastTXT(line);
-    Serial.println(line);
-  }
-
   // unsigned long currentMillis = millis();
-  // doTheFade(currentMillis);
+  // doTheFade(currentMillis); //bikin lelet
 
   webSocket.broadcastTXT(UPTimes);
 
@@ -680,5 +722,25 @@ void loop()
   serialString = serialString + "\n";
   webSocket2.broadcastTXT(NTPTime);
   webSocket3.broadcastTXT(serialString);
-  // serialString = "test2 \n";
+
+  switch (TelnetStream.read())
+  {
+  case 'R':
+    TelnetStream.stop();
+    delay(100);
+    ESP.reset();
+    break;
+  case 'C':
+    TelnetStream.println("bye bye");
+    TelnetStream.flush();
+    TelnetStream.stop();
+    break;
+  }
+
+  // static unsigned long next;
+  // if (millis() - next > 5000)
+  // {
+  //   next = millis();
+  //   log();
+  // }
 }

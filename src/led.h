@@ -3,6 +3,8 @@ unsigned long intervalBlue = 1000; // how long to delay in millis
 unsigned long previousBlue = 0;
 int blueState = LOW;
 
+int LEDPin = 10;
+
 #define OFF 1
 #define ON 0
 
